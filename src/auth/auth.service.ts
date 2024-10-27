@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -33,9 +34,7 @@ export class AuthService {
 
   saltRounds = 10;
 
-  async signUp(
-    createUserDto: CreateUserDto,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  async signUp(createUserDto: CreateUserDto): Promise<AuthResult> {
     const userExists = await this.usersService.findByEmail(createUserDto.email);
     if (userExists) {
       throw new BadRequestException('User already exists');
@@ -58,7 +57,13 @@ export class AuthService {
       this.emitAccountCreatedEvent(newUser);
     }
 
-    return tokens;
+    return {
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      userId: newUser.id,
+      email: newUser.email,
+      name: newUser.name,
+    };
   }
 
   private emitAccountCreatedEvent(newUser): void {
@@ -143,7 +148,13 @@ export class AuthService {
   }
 
   async logout(userId: string) {
-    return this.usersService.update(+userId, { refreshToken: null });
+    const updatedUserRecord = await this.usersService.update(+userId, {
+      refreshToken: null,
+    });
+    if (!updatedUserRecord) {
+      throw new InternalServerErrorException();
+    }
+    return updatedUserRecord;
   }
 
   async refreshToken(userId: string, refreshToken: string) {

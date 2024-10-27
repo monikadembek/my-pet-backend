@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsStrongPassword,
   Length,
 } from 'class-validator';
 
@@ -23,7 +24,14 @@ export class CreateUserDto {
 
   @IsString()
   @IsNotEmpty()
-  @Length(4, 20)
+  @Length(8, 256)
+  @IsStrongPassword({
+    minLength: 8,
+    minLowercase: 1,
+    minUppercase: 1,
+    minNumbers: 1,
+    minSymbols: 1,
+  })
   @ApiProperty({ type: String, description: 'password' })
   password: string;
 

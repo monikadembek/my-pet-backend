@@ -55,7 +55,8 @@ export class AuthController {
   @ApiBearerAuth()
   logout(@Request() request) {
     // because of JWT strategy a user object exists in the request object when a user is signed in
-    return this.authService.logout(request.user.sub);
+    this.authService.logout(request.user.sub);
+    return { message: 'User logged out' };
   }
 
   @UseGuards(AccessTokenGuard)
