@@ -11,7 +11,6 @@ export class SignInDto {
 
   @IsString()
   @IsNotEmpty()
-  @Length(4, 20)
   @ApiProperty({ type: String, description: 'password' })
   password: string;
 }
