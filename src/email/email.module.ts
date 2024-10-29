@@ -19,7 +19,7 @@ import { ConfigService } from '@nestjs/config';
           },
         },
         defaults: {
-          from: 'monika.dembek@gmail.com',
+          from: '"No Reply" My Pet App',
         },
         template: {
           dir: process.cwd() + '/dist/email/templates/',

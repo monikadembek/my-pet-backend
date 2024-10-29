@@ -7,8 +7,10 @@ export default () => ({
   jwt: {
     accessTokenSecret: process.env.JWT_ACCESS_SECRET,
     refreshTokenSecret: process.env.JWT_REFRESH_SECRET,
+    resetPasswordTokenSecret: process.env.JWT_RESET_PASSWORD_SECRET,
     accessTokenExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
     refreshTokenExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
+    resetPasswordTokenExpiresIn: process.env.JWT_RESET_EXPIRES_IN,
   },
   mailer: {
     host: process.env.MAILER_HOST,
@@ -16,4 +18,5 @@ export default () => ({
     user: process.env.MAILER_USER,
     password: process.env.MAILER_PASSWORD,
   },
+  frontendUrl: process.env.FRONTEND_URL,
 });

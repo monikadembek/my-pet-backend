@@ -7,6 +7,7 @@ import { AccessTokenStrategy } from './strategies/accessToken.strategy';
 import { RefreshTokenStrategy } from './strategies/refreshToken.strategy';
 import { AccountCreatedListener } from './listeners/account-created.listener';
 import { EmailModule } from 'src/email/email.module';
+import { ResetPasswordTokenGeneratedListener } from './listeners/reset-password-token-generated.listener';
 
 @Module({
   imports: [UsersModule, JwtModule.register({}), EmailModule],
@@ -16,6 +17,7 @@ import { EmailModule } from 'src/email/email.module';
     AccessTokenStrategy,
     RefreshTokenStrategy,
     AccountCreatedListener,
+    ResetPasswordTokenGeneratedListener,
   ],
   exports: [AuthService],
 })

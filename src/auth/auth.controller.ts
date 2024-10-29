@@ -24,6 +24,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { ForgotPasswordDto } from 'src/users/dto/forgot-password.dto';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -82,5 +83,13 @@ export class AuthController {
     const userId = request.user.sub;
     const refreshToken = request.user.refreshToken;
     return this.authService.refreshToken(userId, refreshToken);
+  }
+
+  @Post('forgot-password')
+  @ApiOperation({ summary: 'Send email with url to set new password' })
+  @ApiResponse({ status: 200, description: 'OK' })
+  @ApiResponse({ status: 404, description: 'Email not found' })
+  forgotPassword(@Body(ValidationPipe) forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.processForgotPasswordLogic(forgotPasswordDto.email);
   }
 }

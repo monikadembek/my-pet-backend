@@ -14,6 +14,8 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccountCreatedEvent } from './events/account-created.event';
+import { ResetPasswordTokenGeneratedEvent } from './events/reset-password-token-generated.event';
+import { EVENTS } from 'src/constants/events.constants';
 
 type AuthResult = {
   accessToken: string;
@@ -54,7 +56,7 @@ export class AuthService {
     await this.updateRefreshToken(`${newUser.id}`, tokens.refreshToken);
 
     if (newUser) {
-      this.emitAccountCreatedEvent(newUser);
+      this.emitAccountCreatedEvent(newUser.name, newUser.email);
     }
 
     return {
@@ -66,11 +68,12 @@ export class AuthService {
     };
   }
 
-  private emitAccountCreatedEvent(newUser): void {
+  private emitAccountCreatedEvent(name: string, email: string): void {
     const accountCreatedEvent = new AccountCreatedEvent();
-    accountCreatedEvent.userName = newUser.name;
-    accountCreatedEvent.userEmail = newUser.email;
-    this.eventEmitter.emit('auth.account-created', accountCreatedEvent);
+    accountCreatedEvent.userName = name;
+    accountCreatedEvent.userEmail = email;
+
+    this.eventEmitter.emit(EVENTS.AUTH.ACCOUNT_CREATED, accountCreatedEvent);
   }
 
   async generateTokens(userId: number, email: string) {
@@ -180,5 +183,54 @@ export class AuthService {
     await this.updateRefreshToken(`${user.id}`, tokens.refreshToken);
 
     return tokens;
+  }
+
+  private emitResetPasswordTokenGeneratedEvent(
+    email: string,
+    name: string,
+    token: string,
+  ): void {
+    const resetPasswordTokenGeneratedEvent =
+      new ResetPasswordTokenGeneratedEvent();
+    resetPasswordTokenGeneratedEvent.userEmail = email;
+    resetPasswordTokenGeneratedEvent.userName = name;
+    resetPasswordTokenGeneratedEvent.resetPasswordToken = token;
+
+    this.eventEmitter.emit(
+      EVENTS.AUTH.RESET_PASSWORD_TOKEN_GENERATED,
+      resetPasswordTokenGeneratedEvent,
+    );
+  }
+
+  async processForgotPasswordLogic(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Provided email was not found');
+    }
+
+    const resetPasswordToken = await this.jwtService.signAsync(
+      {
+        sub: user.id,
+        email,
+      },
+      {
+        secret: this.configService.get<string>('jwt.resetPasswordTokenSecret'),
+        expiresIn: this.configService.get<string>(
+          'jwt.resetPasswordTokenExpiresIn',
+        ),
+      },
+    );
+
+    this.emitResetPasswordTokenGeneratedEvent(
+      user.email,
+      user.name,
+      resetPasswordToken,
+    );
+
+    return {
+      status: 'success',
+      message: `Email with link to reset password has been sent to ${user.email}`,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
