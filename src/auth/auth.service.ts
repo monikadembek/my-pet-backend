@@ -14,6 +14,9 @@ import { SignInDto } from './dto/sign-in.dto';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccountCreatedEvent } from './events/account-created.event';
+import { ResetPasswordTokenGeneratedEvent } from './events/reset-password-token-generated.event';
+import { EVENTS } from 'src/constants/events.constants';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 
 type AuthResult = {
   accessToken: string;
@@ -32,7 +35,7 @@ export class AuthService {
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
-  saltRounds = 10;
+  private saltRounds = 10;
 
   async signUp(createUserDto: CreateUserDto): Promise<AuthResult> {
     const userExists = await this.usersService.findByEmail(createUserDto.email);
@@ -54,7 +57,7 @@ export class AuthService {
     await this.updateRefreshToken(`${newUser.id}`, tokens.refreshToken);
 
     if (newUser) {
-      this.emitAccountCreatedEvent(newUser);
+      this.emitAccountCreatedEvent(newUser.name, newUser.email);
     }
 
     return {
@@ -66,11 +69,12 @@ export class AuthService {
     };
   }
 
-  private emitAccountCreatedEvent(newUser): void {
+  private emitAccountCreatedEvent(name: string, email: string): void {
     const accountCreatedEvent = new AccountCreatedEvent();
-    accountCreatedEvent.userName = newUser.name;
-    accountCreatedEvent.userEmail = newUser.email;
-    this.eventEmitter.emit('auth.account-created', accountCreatedEvent);
+    accountCreatedEvent.userName = name;
+    accountCreatedEvent.userEmail = email;
+
+    this.eventEmitter.emit(EVENTS.AUTH.ACCOUNT_CREATED, accountCreatedEvent);
   }
 
   async generateTokens(userId: number, email: string) {
@@ -180,5 +184,87 @@ export class AuthService {
     await this.updateRefreshToken(`${user.id}`, tokens.refreshToken);
 
     return tokens;
+  }
+
+  private emitResetPasswordTokenGeneratedEvent(
+    email: string,
+    name: string,
+    token: string,
+  ): void {
+    const resetPasswordTokenGeneratedEvent =
+      new ResetPasswordTokenGeneratedEvent();
+    resetPasswordTokenGeneratedEvent.userEmail = email;
+    resetPasswordTokenGeneratedEvent.userName = name;
+    resetPasswordTokenGeneratedEvent.resetPasswordToken = token;
+
+    this.eventEmitter.emit(
+      EVENTS.AUTH.RESET_PASSWORD_TOKEN_GENERATED,
+      resetPasswordTokenGeneratedEvent,
+    );
+  }
+
+  async processForgotPasswordLogic(email: string) {
+    const user = await this.usersService.findByEmail(email);
+    if (!user) {
+      throw new NotFoundException('Provided email was not found');
+    }
+
+    const resetPasswordToken = await this.jwtService.signAsync(
+      {
+        sub: user.id,
+        email,
+      },
+      {
+        secret: this.configService.get<string>('jwt.resetPasswordTokenSecret'),
+        expiresIn: this.configService.get<string>(
+          'jwt.resetPasswordTokenExpiresIn',
+        ),
+      },
+    );
+
+    this.emitResetPasswordTokenGeneratedEvent(
+      user.email,
+      user.name,
+      resetPasswordToken,
+    );
+
+    return {
+      status: 'success',
+      message: `Email with link to reset password has been sent to ${user.email}`,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const { resetPasswordToken, password } = resetPasswordDto;
+    let verifiedTokenData = null;
+
+    try {
+      verifiedTokenData = this.jwtService.verify(resetPasswordToken, {
+        secret: this.configService.get<string>('jwt.resetPasswordTokenSecret'),
+      });
+    } catch (error) {
+      console.log('Error with verifying token: ', error);
+      throw new InternalServerErrorException('Invalid token');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, this.saltRounds);
+
+    const user = await this.usersService.findByEmail(verifiedTokenData.email);
+    if (!user) {
+      throw new NotFoundException(
+        'User with email retrieved from token was not found',
+      );
+    }
+
+    await this.usersService.update(+verifiedTokenData.sub, {
+      password: hashedPassword,
+    });
+
+    return {
+      status: 'success',
+      message: `Password has been changed for ${verifiedTokenData.email}`,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
