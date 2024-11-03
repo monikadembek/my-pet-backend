@@ -17,6 +17,7 @@ import { AccountCreatedEvent } from './events/account-created.event';
 import { ResetPasswordTokenGeneratedEvent } from './events/reset-password-token-generated.event';
 import { EVENTS } from 'src/constants/events.constants';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RequestUserPayload } from './auth.models';
 
 type AuthResult = {
   accessToken: string;
@@ -264,6 +265,15 @@ export class AuthService {
     return {
       status: 'success',
       message: `Password has been changed for ${verifiedTokenData.email}`,
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  async deleteUser(user: RequestUserPayload) {
+    await this.usersService.remove(user.sub);
+    return {
+      status: 'success',
+      message: `Account for ${user.email} was deleted`,
       timestamp: new Date().toISOString(),
     };
   }

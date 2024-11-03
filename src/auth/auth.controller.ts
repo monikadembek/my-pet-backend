@@ -26,6 +26,7 @@ import {
 } from '@nestjs/swagger';
 import { ForgotPasswordDto } from 'src/auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RequestUserPayload } from './auth.models';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -67,8 +68,18 @@ export class AuthController {
   @ApiOperation({ summary: 'Get user profile' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 200, description: 'OK' })
-  getProfile(@Request() request) {
+  getUserProfile(@Request() request): RequestUserPayload {
     return request.user;
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('delete-account')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete user account' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'OK' })
+  deleteUserAccount(@Request() request) {
+    return this.authService.deleteUser(request.user);
   }
 
   // in refresh endpoint client must pass stored refresh token in authorization header as Bearer token
