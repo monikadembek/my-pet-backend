@@ -21,4 +21,18 @@ model User {
   refreshToken  String?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  profile       UserProfile?
+}
+
+model UserProfile {
+  id          Int         @id @default(autoincrement())
+  phoneNumber String?
+  address     String?
+  bio         String?
+  birthdate   DateTime?
+  socialMedia String[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  user        User        @relation(fields: [userId], references: [id])
+  userId      Int         @unique
 }
