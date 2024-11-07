@@ -9,6 +9,7 @@ import configuration from '../config/configuration';
 import { validationSchema } from '../config/validation';
 import { EmailModule } from './email/email.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
+import { UsersProfilesModule } from './users-profiles/users-profiles.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
     DatabaseModule,
     EventEmitterModule.forRoot(),
     EmailModule,
+    UsersProfilesModule,
   ],
   controllers: [AppController],
   providers: [AppService],
