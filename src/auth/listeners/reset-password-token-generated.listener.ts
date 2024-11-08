@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { EmailService } from 'src/email/email.service';
+import { EmailService } from '../../email/email.service';
 import { ResetPasswordTokenGeneratedEvent } from '../events/reset-password-token-generated.event';
-import { EVENTS } from 'src/constants/events.constants';
+import { EVENTS } from '../../constants/events.constants';
 
 @Injectable()
 export class ResetPasswordTokenGeneratedListener {

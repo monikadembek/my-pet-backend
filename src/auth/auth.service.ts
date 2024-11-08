@@ -7,15 +7,15 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from 'src/users/users.service';
+import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
-import { CreateUserDto } from 'src/users/dto/create-user.dto';
+import { CreateUserDto } from '../users/dto/create-user.dto';
 import { SignInDto } from './dto/sign-in.dto';
 import { ConfigService } from '@nestjs/config';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AccountCreatedEvent } from './events/account-created.event';
 import { ResetPasswordTokenGeneratedEvent } from './events/reset-password-token-generated.event';
-import { EVENTS } from 'src/constants/events.constants';
+import { EVENTS } from '../constants/events.constants';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RequestUserPayload } from './auth.models';
 
