@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AccountCreatedEvent } from '../events/account-created.event';
-import { EmailService } from 'src/email/email.service';
-import { EVENTS } from 'src/constants/events.constants';
+import { EmailService } from '../../email/email.service';
+import { EVENTS } from '../../constants/events.constants';
 
 @Injectable()
 export class AccountCreatedListener {

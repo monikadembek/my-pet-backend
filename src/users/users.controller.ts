@@ -12,7 +12,7 @@ import {
 import { UserDto, UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Prisma } from '@prisma/client';
-import { AccessTokenGuard } from 'src/shared/guards/accessToken.guard';
+import { AccessTokenGuard } from '../shared/guards/accessToken.guard';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -20,12 +20,10 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
-  ApiResponse,
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { User } from './users.service';
 
 @ApiTags('users')
 @Controller('users')

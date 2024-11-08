@@ -8,7 +8,7 @@ import {
   ValidationPipe,
 } from '@nestjs/common';
 import { UsersProfilesService } from './users-profiles.service';
-import { AccessTokenGuard } from 'src/shared/guards/accessToken.guard';
+import { AccessTokenGuard } from '../shared/guards/accessToken.guard';
 import {
   ApiBearerAuth,
   ApiBody,

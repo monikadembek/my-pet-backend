@@ -13,7 +13,7 @@ import { AuthService } from './auth.service';
 import { SignInDto } from './dto/sign-in.dto';
 import { CreateUserDto } from '../users/dto/create-user.dto';
 import { AccessTokenGuard } from '../shared/guards/accessToken.guard';
-import { RefreshTokenGuard } from 'src/shared/guards/refreshToken.guard';
+import { RefreshTokenGuard } from '../shared/guards/refreshToken.guard';
 import {
   ApiBearerAuth,
   ApiBody,
@@ -24,7 +24,7 @@ import {
   ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
-import { ForgotPasswordDto } from 'src/auth/dto/forgot-password.dto';
+import { ForgotPasswordDto } from '../auth/dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { RequestUserPayload } from './auth.models';
 
