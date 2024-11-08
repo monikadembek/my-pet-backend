@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { UserProfile } from '@prisma/client';
 import { DatabaseService } from '../database/database.service';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 
@@ -7,7 +6,7 @@ import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 export class UsersProfilesService {
   constructor(private readonly prisma: DatabaseService) {}
 
-  async getUserProfile(userId: string): Promise<UserProfile> {
+  async getUserProfile(userId: string) {
     return this.prisma.userProfile.findUnique({
       where: {
         userId: +userId,
