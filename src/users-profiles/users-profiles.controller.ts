@@ -1,16 +1,24 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Patch,
+  UseGuards,
+  ValidationPipe,
+} from '@nestjs/common';
 import { UsersProfilesService } from './users-profiles.service';
 import { AccessTokenGuard } from 'src/shared/guards/accessToken.guard';
 import {
   ApiBearerAuth,
   ApiBody,
-  ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
+  ApiParam,
   ApiResponse,
-  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
+import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 
 @Controller('users-profiles')
 export class UsersProfilesController {
@@ -20,9 +28,28 @@ export class UsersProfilesController {
   @Get(':userId')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get user profile information' })
+  @ApiParam({ name: 'userId', format: 'String' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 200, description: 'OK' })
   getProfile(@Param('userId') userId: string) {
     return this.usersProfilesService.getUserProfile(userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Patch(':userId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update information in user profile' })
+  @ApiParam({ name: 'userId', format: 'String' })
+  @ApiBody({ type: UpdateUserProfileDto })
+  @ApiOkResponse({ description: 'User profile updated' })
+  @ApiUnauthorizedResponse({ description: 'Unauthorized' })
+  updateProfile(
+    @Param('userId') userId: string,
+    @Body(ValidationPipe) updateUserProfileDto: UpdateUserProfileDto,
+  ) {
+    return this.usersProfilesService.updateUserProfile(
+      userId,
+      updateUserProfileDto,
+    );
   }
 }
