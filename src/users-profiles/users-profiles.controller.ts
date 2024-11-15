@@ -16,10 +16,12 @@ import {
   ApiOperation,
   ApiParam,
   ApiResponse,
+  ApiTags,
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 import { UpdateUserProfileDto } from './dto/update-user-profile.dto';
 
+@ApiTags('users-profiles')
 @Controller('users-profiles')
 export class UsersProfilesController {
   constructor(private readonly usersProfilesService: UsersProfilesService) {}
