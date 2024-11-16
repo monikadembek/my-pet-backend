@@ -12,7 +12,13 @@ import { PetsService } from './pets.service';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { AccessTokenGuard } from 'src/shared/guards/accessToken.guard';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 
 @ApiTags('pets')
 @Controller('pets')
@@ -62,6 +68,11 @@ export class PetsController {
 
   @UseGuards(AccessTokenGuard)
   @Delete(':id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Delete pet profile' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'OK' })
   remove(@Param('id') id: string) {
     return this.petsService.remove(+id);
   }
