@@ -89,7 +89,32 @@ export class PetsService {
     return `This action updates a #${id} pet`;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} pet`;
+  async remove(id: number) {
+    const pet = await this.prisma.pet.findFirst({
+      where: {
+        id,
+      },
+    });
+    if (!pet) {
+      throw new NotFoundException(`Pet with id ${id} was not found`);
+    }
+
+    const deleteAdditionalContacts = this.prisma.additionalContact.deleteMany({
+      where: {
+        petId: id,
+      },
+    });
+    const deletePet = this.prisma.pet.delete({
+      where: {
+        id,
+      },
+    });
+    await this.prisma.$transaction([deleteAdditionalContacts, deletePet]);
+
+    return {
+      status: 'success',
+      message: `Pet named ${pet.name} was deleted`,
+      timestamp: new Date().toISOString(),
+    };
   }
 }
