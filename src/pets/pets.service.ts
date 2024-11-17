@@ -7,6 +7,7 @@ import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { DatabaseService } from 'src/database/database.service';
 import { UsersService } from 'src/users/users.service';
+import { CreateVetClinicDto } from './dto/create-vet-clinic.dto';
 
 @Injectable()
 export class PetsService {
@@ -15,8 +16,66 @@ export class PetsService {
     private readonly usersService: UsersService,
   ) {}
 
-  create(createPetDto: CreatePetDto) {
-    return 'This action adds a new pet';
+  async create(createPetDto: CreatePetDto, userId: number) {
+    if (createPetDto.vetClinicId) {
+      return this.prisma.pet.create({
+        data: {
+          name: createPetDto.name,
+          species: createPetDto.species,
+          breed: createPetDto.breed,
+          description: createPetDto.description,
+          dateOfBirth: createPetDto.dateOfBirth,
+          weight: createPetDto.weight,
+          food: createPetDto.food,
+          healthIssues: createPetDto.healthIssues,
+          medicine: createPetDto.medicine,
+          behavioralIssues: createPetDto.behavioralIssues,
+          user: {
+            connect: { id: userId },
+          },
+          vetClinic: {
+            connect: { id: createPetDto.vetClinicId },
+          },
+          additionalContacts: {
+            create: createPetDto.additionalContacts,
+          },
+        },
+        include: {
+          additionalContacts: true,
+          vetClinic: true,
+        },
+      });
+    } else {
+      return this.prisma.pet.create({
+        data: {
+          name: createPetDto.name,
+          species: createPetDto.species,
+          breed: createPetDto.breed,
+          description: createPetDto.description,
+          dateOfBirth: createPetDto.dateOfBirth,
+          weight: createPetDto.weight,
+          food: createPetDto.food,
+          healthIssues: createPetDto.healthIssues,
+          medicine: createPetDto.medicine,
+          behavioralIssues: createPetDto.behavioralIssues,
+          user: {
+            connect: { id: userId },
+          },
+          additionalContacts: {
+            create: createPetDto.additionalContacts,
+          },
+        },
+        include: {
+          additionalContacts: true,
+        },
+      });
+    }
+  }
+
+  async createVetClinic(createVetClinicDto: CreateVetClinicDto) {
+    return this.prisma.vetClinic.create({
+      data: createVetClinicDto,
+    });
   }
 
   async findAll() {
