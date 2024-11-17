@@ -8,6 +8,7 @@ import {
   Delete,
   Request,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { PetsService } from './pets.service';
 import { CreatePetDto } from './dto/create-pet.dto';
@@ -20,6 +21,7 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { CreateVetClinicDto } from './dto/create-vet-clinic.dto';
 
 @ApiTags('pets')
 @Controller('pets')
@@ -32,9 +34,22 @@ export class PetsController {
   @ApiOperation({ summary: 'Create pet profile' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 201, description: 'Created' })
-  create(@Body() createPetDto: CreatePetDto, @Request() request) {
+  create(@Body(ValidationPipe) createPetDto: CreatePetDto, @Request() request) {
     const userId = request.user.sub;
     return this.petsService.create(createPetDto, +userId);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Post('vetClinic')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create vet clinic data and connect with pet' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 201, description: 'Created' })
+  createVetClinic(
+    @Body(ValidationPipe)
+    createVetClinicDto: CreateVetClinicDto,
+  ) {
+    return this.petsService.createVetClinic(createVetClinicDto);
   }
 
   @Get()
