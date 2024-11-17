@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Request,
   UseGuards,
 } from '@nestjs/common';
 import { PetsService } from './pets.service';
@@ -67,13 +68,14 @@ export class PetsController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Delete(':id')
+  @Delete(':petId')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete pet profile' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 200, description: 'OK' })
-  remove(@Param('id') id: string) {
-    return this.petsService.remove(+id);
+  remove(@Param('petId') petId: string, @Request() request) {
+    const userId = request.user.sub;
+    return this.petsService.remove(+petId, +userId);
   }
 }

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { DatabaseService } from 'src/database/database.service';
@@ -89,24 +93,31 @@ export class PetsService {
     return `This action updates a #${id} pet`;
   }
 
-  async remove(id: number) {
+  async remove(petId: number, userId: number) {
     const pet = await this.prisma.pet.findFirst({
       where: {
-        id,
+        id: petId,
       },
     });
+
     if (!pet) {
-      throw new NotFoundException(`Pet with id ${id} was not found`);
+      throw new NotFoundException(`Pet with id ${petId} was not found`);
+    }
+
+    if (userId !== pet.userId) {
+      throw new UnauthorizedException(
+        `Unauthorized attempt to delete pet belonging to other user`,
+      );
     }
 
     const deleteAdditionalContacts = this.prisma.additionalContact.deleteMany({
       where: {
-        petId: id,
+        petId,
       },
     });
     const deletePet = this.prisma.pet.delete({
       where: {
-        id,
+        id: petId,
       },
     });
     await this.prisma.$transaction([deleteAdditionalContacts, deletePet]);
