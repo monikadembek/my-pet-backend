@@ -40,9 +40,9 @@ export class PetsController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Post('vetClinic')
+  @Post('vet-clinic')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create vet clinic data and connect with pet' })
+  @ApiOperation({ summary: 'Create vet clinic data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 201, description: 'Created' })
   createVetClinic(
@@ -50,6 +50,17 @@ export class PetsController {
     createVetClinicDto: CreateVetClinicDto,
   ) {
     return this.petsService.createVetClinic(createVetClinicDto);
+  }
+
+  @UseGuards(AccessTokenGuard)
+  @Get('vet-clinic')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get list of all vet clinics' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'OK' })
+  findAllVetClinics() {
+    return this.petsService.findAllVetClinics();
   }
 
   @Get()

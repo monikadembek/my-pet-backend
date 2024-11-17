@@ -78,6 +78,10 @@ export class PetsService {
     });
   }
 
+  async findAllVetClinics() {
+    return this.prisma.vetClinic.findMany();
+  }
+
   async findAll() {
     return this.prisma.pet.findMany({
       include: {
