@@ -28,8 +28,13 @@ export class PetsController {
 
   @UseGuards(AccessTokenGuard)
   @Post()
-  create(@Body() createPetDto: CreatePetDto) {
-    return this.petsService.create(createPetDto);
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Create pet profile' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 201, description: 'Created' })
+  create(@Body() createPetDto: CreatePetDto, @Request() request) {
+    const userId = request.user.sub;
+    return this.petsService.create(createPetDto, +userId);
   }
 
   @Get()

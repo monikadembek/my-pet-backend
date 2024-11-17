@@ -15,8 +15,16 @@ export class PetsService {
     private readonly usersService: UsersService,
   ) {}
 
-  create(createPetDto: CreatePetDto) {
-    return 'This action adds a new pet';
+  async create(createPetDto: CreatePetDto, userId: number) {
+    const pet = await this.prisma.pet.create({
+      data: {
+        ...createPetDto,
+        user: {
+          connect: { id: userId },
+        },
+      },
+    });
+    return pet;
   }
 
   async findAll() {
