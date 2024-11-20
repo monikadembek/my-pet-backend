@@ -18,58 +18,49 @@ export class PetsService {
 
   async create(createPetDto: CreatePetDto, userId: number) {
     if (createPetDto.vetClinicId) {
-      return this.prisma.pet.create({
-        data: {
-          name: createPetDto.name,
-          species: createPetDto.species,
-          breed: createPetDto.breed,
-          description: createPetDto.description,
-          dateOfBirth: createPetDto.dateOfBirth,
-          weight: createPetDto.weight,
-          food: createPetDto.food,
-          healthIssues: createPetDto.healthIssues,
-          medicine: createPetDto.medicine,
-          behavioralIssues: createPetDto.behavioralIssues,
-          user: {
-            connect: { id: userId },
-          },
-          vetClinic: {
-            connect: { id: createPetDto.vetClinicId },
-          },
-          additionalContacts: {
-            create: createPetDto.additionalContacts,
-          },
-        },
-        include: {
-          additionalContacts: true,
-          vetClinic: true,
-        },
+      const vetClinicExists = await this.prisma.vetClinic.findUnique({
+        where: { id: createPetDto.vetClinicId },
       });
-    } else {
-      return this.prisma.pet.create({
-        data: {
-          name: createPetDto.name,
-          species: createPetDto.species,
-          breed: createPetDto.breed,
-          description: createPetDto.description,
-          dateOfBirth: createPetDto.dateOfBirth,
-          weight: createPetDto.weight,
-          food: createPetDto.food,
-          healthIssues: createPetDto.healthIssues,
-          medicine: createPetDto.medicine,
-          behavioralIssues: createPetDto.behavioralIssues,
-          user: {
-            connect: { id: userId },
-          },
-          additionalContacts: {
-            create: createPetDto.additionalContacts,
-          },
-        },
-        include: {
-          additionalContacts: true,
-        },
-      });
+
+      if (!vetClinicExists) {
+        throw new NotFoundException(
+          `Vet clinic with id ${createPetDto.vetClinicId} does not exist`,
+        );
+      }
     }
+
+    const createData: any = {
+      name: createPetDto.name,
+      species: createPetDto.species,
+      breed: createPetDto.breed,
+      description: createPetDto.description,
+      dateOfBirth: createPetDto.dateOfBirth,
+      weight: createPetDto.weight,
+      food: createPetDto.food,
+      healthIssues: createPetDto.healthIssues,
+      medicine: createPetDto.medicine,
+      behavioralIssues: createPetDto.behavioralIssues,
+      user: {
+        connect: { id: userId },
+      },
+      additionalContacts: {
+        create: createPetDto.additionalContacts,
+      },
+    };
+
+    if (createPetDto.vetClinicId) {
+      createData.vetClinic = {
+        connect: { id: createPetDto.vetClinicId },
+      };
+    }
+
+    return this.prisma.pet.create({
+      data: createData,
+      include: {
+        additionalContacts: true,
+        vetClinic: createPetDto.vetClinicId ? true : false,
+      },
+    });
   }
 
   async createVetClinic(createVetClinicDto: CreateVetClinicDto) {
@@ -152,8 +143,77 @@ export class PetsService {
     return pet;
   }
 
-  update(id: number, updatePetDto: UpdatePetDto) {
-    return `This action updates a #${id} pet`;
+  async update(userId: number, petId: number, updatePetDto: UpdatePetDto) {
+    const pet = await this.prisma.pet.findFirst({
+      where: {
+        id: petId,
+      },
+    });
+
+    if (!pet) {
+      throw new NotFoundException(`Pet with id ${petId} was not found`);
+    }
+
+    if (userId !== pet.userId) {
+      throw new UnauthorizedException(
+        `Unauthorized attempt to update pet belonging to other user`,
+      );
+    }
+
+    if (updatePetDto.vetClinicId) {
+      const vetClinicExists = await this.prisma.vetClinic.findUnique({
+        where: { id: updatePetDto.vetClinicId },
+      });
+
+      if (!vetClinicExists) {
+        throw new NotFoundException(
+          `Vet clinic with id ${updatePetDto.vetClinicId} does not exist`,
+        );
+      }
+    }
+
+    const updateData: any = {
+      name: updatePetDto.name,
+      species: updatePetDto.species,
+      breed: updatePetDto.breed,
+      description: updatePetDto.description,
+      dateOfBirth: updatePetDto.dateOfBirth,
+      weight: updatePetDto.weight,
+      food: updatePetDto.food,
+      healthIssues: updatePetDto.healthIssues,
+      medicine: updatePetDto.medicine,
+      behavioralIssues: updatePetDto.behavioralIssues,
+    };
+
+    // handle vetClinic connection
+    if (updatePetDto.vetClinicId) {
+      updateData.vetClinicId = {
+        connect: { id: updateData.vetClinicId },
+      };
+    } else {
+      updateData.vetClinicId = {
+        disconnect: true,
+      };
+    }
+
+    // handle additional contacts
+    if (updatePetDto.additionalContacts) {
+      updateData.additionalContacts = {
+        deleteMany: {}, // delete all existing contacts
+        create: updatePetDto.additionalContacts, // create new contacts
+      };
+    }
+
+    return this.prisma.pet.update({
+      where: {
+        id: petId,
+      },
+      data: updateData,
+      include: {
+        additionalContacts: true,
+        vetClinic: true,
+      },
+    });
   }
 
   async remove(petId: number, userId: number) {
