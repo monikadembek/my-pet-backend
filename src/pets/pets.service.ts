@@ -187,11 +187,11 @@ export class PetsService {
 
     // handle vetClinic connection
     if (updatePetDto.vetClinicId) {
-      updateData.vetClinicId = {
-        connect: { id: updateData.vetClinicId },
+      updateData.vetClinic = {
+        connect: { id: updatePetDto.vetClinicId },
       };
     } else {
-      updateData.vetClinicId = {
+      updateData.vetClinic = {
         disconnect: true,
       };
     }
