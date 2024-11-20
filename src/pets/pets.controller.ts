@@ -3,12 +3,13 @@ import {
   Get,
   Post,
   Body,
-  Patch,
   Param,
   Delete,
   Request,
   UseGuards,
   ValidationPipe,
+  Put,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { PetsService } from './pets.service';
 import { CreatePetDto } from './dto/create-pet.dto';
@@ -40,9 +41,9 @@ export class PetsController {
   }
 
   @UseGuards(AccessTokenGuard)
-  @Post('vetClinic')
+  @Post('vet-clinic')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create vet clinic data and connect with pet' })
+  @ApiOperation({ summary: 'Create vet clinic data' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 201, description: 'Created' })
   createVetClinic(
@@ -52,14 +53,25 @@ export class PetsController {
     return this.petsService.createVetClinic(createVetClinicDto);
   }
 
+  @UseGuards(AccessTokenGuard)
+  @Get('vet-clinic')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get list of all vet clinics' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'OK' })
+  findAllVetClinics() {
+    return this.petsService.findAllVetClinics();
+  }
+
   @Get()
   findAll() {
     return this.petsService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.petsService.findOne(+id);
+  findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.petsService.findOne(id);
   }
 
   @Get('user/:userId')
@@ -67,8 +79,8 @@ export class PetsController {
   @ApiParam({ name: 'userId', format: 'String' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 200, description: 'OK' })
-  findAllPetsForUser(@Param('userId') userId: string) {
-    return this.petsService.findAllForUser(+userId);
+  findAllPetsForUser(@Param('userId', ParseIntPipe) userId: number) {
+    return this.petsService.findAllForUser(userId);
   }
 
   @Get('user/:userId/:id')
@@ -77,14 +89,27 @@ export class PetsController {
   @ApiParam({ name: 'id', format: 'String' })
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 200, description: 'OK' })
-  findOnePetForUser(@Param('userId') userId: string, @Param('id') id: string) {
-    return this.petsService.findOneForUser(+userId, +id);
+  findOnePetForUser(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('id', ParseIntPipe) id: number,
+  ) {
+    return this.petsService.findOneForUser(userId, id);
   }
 
   @UseGuards(AccessTokenGuard)
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePetDto: UpdatePetDto) {
-    return this.petsService.update(+id, updatePetDto);
+  @Put(':id')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Update pet profile' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 200, description: 'OK' })
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(ValidationPipe) updatePetDto: UpdatePetDto,
+    @Request() request,
+  ) {
+    const userId = request.user.sub;
+    return this.petsService.update(+userId, id, updatePetDto);
   }
 
   @UseGuards(AccessTokenGuard)
@@ -94,8 +119,8 @@ export class PetsController {
   @ApiResponse({ status: 404, description: 'Not found' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 200, description: 'OK' })
-  remove(@Param('petId') petId: string, @Request() request) {
+  remove(@Param('petId', ParseIntPipe) petId: number, @Request() request) {
     const userId = request.user.sub;
-    return this.petsService.remove(+petId, +userId);
+    return this.petsService.remove(petId, +userId);
   }
 }

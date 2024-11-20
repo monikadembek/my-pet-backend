@@ -18,76 +18,81 @@ export class CreatePetDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(256)
-  @ApiProperty({ type: String, description: 'name' })
+  @ApiProperty({ type: String, description: 'name', required: true })
   name: string;
 
   @IsString()
   @IsNotEmpty()
   @MaxLength(256)
-  @ApiProperty({ type: String, description: 'species' })
+  @ApiProperty({ type: String, description: 'species', required: true })
   species: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(256)
-  @ApiProperty({ type: String, description: 'breed' })
+  @ApiProperty({ type: String, description: 'breed', required: false })
   breed?: string;
 
   @IsOptional()
   @IsDateString()
-  @ApiProperty({ type: String, description: 'dateOfBirth' })
+  @ApiProperty({ type: String, description: 'dateOfBirth', required: false })
   dateOfBirth?: Date;
 
   @IsOptional()
   @IsString()
   @MaxLength(2048)
-  @ApiProperty({ type: String, description: 'profilePhoto' })
+  @ApiProperty({ type: String, description: 'profilePhoto', required: false })
   profilePhoto?: string;
 
   @IsOptional()
   @IsNumber()
   @Min(1)
-  @ApiProperty({ type: String, description: 'height' })
+  @ApiProperty({ type: String, description: 'height', required: false })
   height?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(0.1)
-  @ApiProperty({ type: String, description: 'weight' })
+  @ApiProperty({ type: String, description: 'weight', required: false })
   weight?: number;
 
   @IsOptional()
   @IsString()
   @MaxLength(2000)
-  @ApiProperty({ type: String, description: 'descrition' })
+  @ApiProperty({ type: String, description: 'descrition', required: false })
   description?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(2000)
-  @ApiProperty({ type: String, description: 'food' })
+  @ApiProperty({ type: String, description: 'food', required: false })
   food?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(2000)
-  @ApiProperty({ type: String, description: 'healthIssues' })
+  @ApiProperty({ type: String, description: 'healthIssues', required: false })
   healthIssues?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(2000)
-  @ApiProperty({ type: String, description: 'medicine' })
+  @ApiProperty({ type: String, description: 'medicine', required: false })
   medicine?: string;
 
   @IsOptional()
   @IsString()
   @MaxLength(2000)
-  @ApiProperty({ type: String, description: 'behavioralIssues' })
+  @ApiProperty({
+    type: String,
+    description: 'behavioralIssues',
+    required: false,
+  })
   behavioralIssues?: string;
 
   @IsOptional()
   @IsInt()
+  @ApiProperty({ type: Number, description: 'vetClinicId', required: false })
   vetClinicId?: number;
 
   @IsOptional()
@@ -95,8 +100,9 @@ export class CreatePetDto {
   @ValidateNested({ each: true })
   @Type(() => AdditionalContactDto)
   @ApiProperty({
-    type: () => AdditionalContactDto,
+    type: () => [AdditionalContactDto],
     description: 'additionalContacts',
+    required: false,
   })
   additionalContacts?: AdditionalContactDto[];
 }
